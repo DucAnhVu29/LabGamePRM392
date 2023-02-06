@@ -56,9 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String REQUIRE = "Require";
     private static final String BALANCE_TEXT = "You balance: ";
     private final double balance = (int) (50 + (Math.random() * 150 + 1));
-    private int firstRunnerStep = 0;
-    private int secondRunnerStep = 0;
-    private int thirdRunnerStep = 0;
+    private int[] runnerSteps = {0, 0, 0};
     private ArrayList<String> rank = new ArrayList<>();
 
 
@@ -193,11 +191,13 @@ public class MainActivity extends AppCompatActivity {
 //                    secondPikachuCheckBox.setEnabled(false);
 //                    thirdPikachuCheckBox.setEnabled(false);
 
-                    rank.clear();
 
-                    firstRunnerStep = 0;
-                    secondRunnerStep = 0;
-                    thirdRunnerStep = 0;
+
+                    resetRace();
+
+                    runnerSteps[0] = 0;
+                    runnerSteps[1] = 0;
+                    runnerSteps[2] = 0;
 
                     SeekBarRunner firstPikachu = new SeekBarRunner(firstPikachuText.getText().toString());
                     SeekBarRunner secondPikachu = new SeekBarRunner(secondPikachuText.getText().toString());
@@ -211,13 +211,13 @@ public class MainActivity extends AppCompatActivity {
                         while (firstPikachu.isRunning()) {
                             speeds[0] = randomSpeed(speeds[0]);
 
-                            if (firstRunnerStep < maxCount) {
+                            if (runnerSteps[0] < maxCount) {
 
-                                firstRunnerStep += speeds[0];
+                                runnerSteps[0] += speeds[0];
 
-                                firstPikachu.setProgress(firstRunnerStep);
+                                firstPikachu.setProgress(runnerSteps[0]);
 
-                                firstPikachuSeekBar.setProgress(firstRunnerStep);
+                                firstPikachuSeekBar.setProgress(runnerSteps[0]);
                                 try {
                                     Thread.sleep(tickTime);
                                 } catch (InterruptedException e) {
@@ -234,16 +234,15 @@ public class MainActivity extends AppCompatActivity {
 
                     Runnable secondRunner = () -> {
                         while (secondPikachu.isRunning()) {
-                            Log.i("1", "1");
                             speeds[1] = randomSpeed(speeds[1]);
 
-                            if (secondRunnerStep < maxCount) {
+                            if (runnerSteps[1] < maxCount) {
 
-                                secondRunnerStep += speeds[1];
+                                runnerSteps[1] += speeds[1];
 
-                                secondPikachu.setProgress(secondRunnerStep);
+                                secondPikachu.setProgress(runnerSteps[1]);
 
-                                secondPikachuSeekBar.setProgress(secondRunnerStep);
+                                secondPikachuSeekBar.setProgress(runnerSteps[1]);
                                 try {
                                     Thread.sleep(tickTime);
                                 } catch (InterruptedException e) {
@@ -261,13 +260,13 @@ public class MainActivity extends AppCompatActivity {
                         while (thirdPikachu.isRunning()) {
                             speeds[2] = randomSpeed(speeds[2]);
 
-                            if (thirdRunnerStep < maxCount) {
+                            if (runnerSteps[2] < maxCount) {
 
-                                thirdRunnerStep += speeds[2];
+                                runnerSteps[2] += speeds[2];
 
-                                thirdPikachu.setProgress(thirdRunnerStep);
+                                thirdPikachu.setProgress(runnerSteps[2]);
 
-                                thirdPikachuSeekBar.setProgress(thirdRunnerStep);
+                                thirdPikachuSeekBar.setProgress(runnerSteps[2]);
                                 try {
                                     Thread.sleep(tickTime);
                                 } catch (InterruptedException e) {
@@ -286,15 +285,16 @@ public class MainActivity extends AppCompatActivity {
 //                    new Thread(secondRunner).start();
 //                    new Thread(thirdRunner).start();
 
+                    // Start runners' thread
+                    Thread[] runnerThreads = {
+                            new Thread(firstRunner),
+                            new Thread(secondRunner),
+                            new Thread(thirdRunner),
+                    };
 
-                    Thread first = new Thread(firstRunner);
-                    Thread second = new Thread(secondRunner);
-                    Thread third = new Thread(thirdRunner);
-
-
-                    first.start();
-                    second.start();
-                    third.start();
+                    for (Thread runnerThread: runnerThreads) {
+                        runnerThread.start();
+                    }
 
 
 
@@ -314,6 +314,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void resetRace() {
+        rank.clear();
+        runnerSteps = new int[] {0, 0, 0};
+        speeds = new int[] {initialSpeed, initialSpeed, initialSpeed};
+    }
     //    Check Input field
     private boolean checkInput() {
         if (firstPikachuCheckBox.isChecked() && TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
