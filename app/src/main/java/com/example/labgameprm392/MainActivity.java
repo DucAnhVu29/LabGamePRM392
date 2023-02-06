@@ -49,12 +49,13 @@ public class MainActivity extends AppCompatActivity {
     private int tickTime = 10;
     private static final int maxCount = 10000;
     private static final int minCount = 0;
-    private static final String BALANCE_TEXT = "Số tiền còn lại: ";
-    private final double balance = (int) (50 + (Math.random() * 150 + 1));
+    private double balance = (int) (50 + (Math.random() * 150 + 1));
     private ArrayList<String> rank = new ArrayList<>();
     private int initialSpeed = 10;
 
     private int nextRank = 1;
+
+    double[] betAmounts = {0, 0, 0};
 
     SeekBarRunner[] pikachus = {null, null, null};
 
@@ -104,13 +105,16 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        Random your balance
-        balanceText.setText(BALANCE_TEXT + balance + "$");
+        balanceText.setText(balance + "");
 
 
 //        Start Race
         startRaceBtn.setOnClickListener(
                 v -> {
                     if (state == State.START) {
+                        resetRace();
+                        Thread.currentThread().interrupt();
+
                         if (!checkInput()) {
                             Toast.makeText(this, "Cược tối đa 2 Pikachu thoyyy",
                                     Toast.LENGTH_LONG).show();
@@ -122,9 +126,6 @@ public class MainActivity extends AppCompatActivity {
                                     Toast.LENGTH_LONG).show();
                             return;
                         }
-
-                        Thread.currentThread().interrupt();
-                        resetRace();
 
                         Runnable[] runnables = {null, null, null};
 
@@ -164,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
         rank.clear();
 
         nextRank = 1;
+        betAmounts = new double[]{0, 0, 0};
 
         for (SeekBarRunner pikachu : pikachus) {
             pikachu.speed = initialSpeed;
@@ -198,16 +200,23 @@ public class MainActivity extends AppCompatActivity {
                         nextRank++;
                         pikachus[i].setRunning(false);
 
+                        if (pikachus[i].getRank() == 1) {
+                            balance += betAmounts[i] * 2;
+                        }
+
                         if (nextRank > 3) {
                             runOnUiThread(new Runnable() {
                                 public void run() {
                                     startRaceBtn.setEnabled(true);
                                     startRaceBtn.setBackgroundColor(0xFFF6EB05);
+
+                                    balanceText.setText(Double.toString(balance));
                                 }
                             });
                         }
 
                         Thread.currentThread().interrupt();
+
                     }
                 }
 
@@ -218,25 +227,48 @@ public class MainActivity extends AppCompatActivity {
         return runnable;
     }
 
-    private void updateButtonState() {
-
-    }
-
     //    Check Input field
     private boolean checkInput() {
         int cnt = 0;
 
-        if (!TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
-            cnt++;
-        }
-        if (!TextUtils.isEmpty(secondPikachuAmountBet.getText().toString())) {
-            cnt++;
-        }
-        if (!TextUtils.isEmpty(thirdPikachuAmountBet.getText().toString())) {
-            cnt++;
+        try {
+            if (!TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
+
+                betAmounts[0] =
+                        Double.parseDouble(firstPikachuAmountBet.getText().toString());
+                cnt++;
+            }
+
+            if (!TextUtils.isEmpty(secondPikachuAmountBet.getText().toString())) {
+                betAmounts[1] =
+                        Double.parseDouble(secondPikachuAmountBet.getText().toString());
+                cnt++;
+            }
+
+            if (!TextUtils.isEmpty(thirdPikachuAmountBet.getText().toString())) {
+                betAmounts[2] =
+                        Double.parseDouble(thirdPikachuAmountBet.getText().toString());
+                cnt++;
+            }
+
+            if (cnt >= 3) return false;
+
+            for (double betAmount : betAmounts) {
+                balance -= betAmount;
+            }
+
+            firstPikachuAmountBet.setText("");
+            secondPikachuAmountBet.setText("");
+            thirdPikachuAmountBet.setText("");
+
+            balanceText.setText(Double.toString(balance));
+        } catch (Exception e) {
+            Toast.makeText(this, "Số tiền cược không hợp lệ",
+                    Toast.LENGTH_LONG).show();
+            return false;
         }
 
-        return cnt <= 2;
+        return true;
     }
 
     //    Check amount that bet
