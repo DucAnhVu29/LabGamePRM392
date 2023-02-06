@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
     <TextView
@@ -11,7 +13,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:text="Welcome"
+        android:gravity="center_horizontal"
+        android:text="FPT88\nNhà cái uy tín số 1 VN"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,132 +25,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="You balance: XXX$"
+        android:text="Số tiền của bạn: XXX$"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/welcomeText" />
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/balanceText">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="3"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/firstPikachuText"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:textAlignment="textEnd"
-                android:gravity="center"
-                android:text="First Pikachu"
-                android:textSize="20sp"
-                tools:ignore="RtlCompat" />
-
-            <TextView
-                android:id="@+id/secondPikachuText"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:textAlignment="textEnd"
-                android:gravity="center"
-                android:text="Second Pikachu"
-                android:textSize="20sp"
-                tools:ignore="RtlCompat" />
-
-            <TextView
-                android:id="@+id/thirdPikachuText"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:textAlignment="textEnd"
-                android:gravity="center"
-                android:text="Third Pikachu"
-                android:textSize="20sp"
-                tools:ignore="RtlCompat" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <CheckBox
-                android:id="@+id/firstPikachuCheckBox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="" />
-
-            <CheckBox
-                android:id="@+id/secondPikachuCheckBox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="" />
-
-            <CheckBox
-                android:id="@+id/thirdPikachuCheckBox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:orientation="vertical">
-
-
-            <EditText
-                android:id="@+id/firstPikachuAmountBet"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:inputType="numberDecimal"
-                android:hint="@string/amount_of_money"
-                android:text=""
-                android:textSize="20sp"
-                android:autofillHints="" />
-
-            <EditText
-                android:id="@+id/secondPikachuAmountBet"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:inputType="numberDecimal"
-                android:text=""
-                android:hint="@string/amount_of_money"
-                android:textSize="20sp"
-                android:autofillHints="" />
-
-            <EditText
-                android:id="@+id/thirdPikachuAmountBet"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:inputType="numberDecimal"
-                android:hint="@string/amount_of_money"
-                android:text=""
-                android:textSize="20sp"
-                android:autofillHints="" />
-        </LinearLayout>
-
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout2"
@@ -161,42 +43,107 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
-        <SeekBar
-            android:id="@+id/firstPikachuSeekBar"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:contextClickable="false"
-            android:progressDrawable="@drawable/bg_custom_seekbar"
-            android:thumb="@drawable/pikachu"
-            android:thumbOffset="18dp" />
+            android:layout_height="wrap_content">
 
-        <SeekBar
-            android:id="@+id/secondPikachuSeekBar"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:progressDrawable="@drawable/bg_custom_seekbar"
-            android:thumb="@drawable/pikachu"
-            android:thumbOffset="18dp" />
+            <SeekBar
+                android:id="@+id/firstPikachuSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:contextClickable="false"
+                android:progressDrawable="@drawable/bg_custom_seekbar"
+                android:thumb="@drawable/pikachu"
+                android:thumbOffset="18dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <SeekBar
-            android:id="@+id/thirdPikachuSeekBar"
+            <EditText
+                android:id="@+id/firstPikachuAmountBet"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="64dp"
+                android:layout_weight="1"
+                android:autofillHints=""
+                android:hint="@string/amount_of_money"
+                android:inputType="numberDecimal"
+                android:text=""
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/firstPikachuSeekBar" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:progressDrawable="@drawable/bg_custom_seekbar"
-            android:thumb="@drawable/pikachu"
-            android:thumbOffset="18dp" />
+            android:layout_height="wrap_content">
+
+            <SeekBar
+                android:id="@+id/secondPikachuSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:progressDrawable="@drawable/bg_custom_seekbar"
+                android:thumb="@drawable/pikachu"
+                android:thumbOffset="18dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/secondPikachuAmountBet"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="64dp"
+                android:layout_weight="1"
+                android:autofillHints=""
+                android:hint="@string/amount_of_money"
+                android:inputType="numberDecimal"
+                android:text=""
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <SeekBar
+                android:id="@+id/thirdPikachuSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:progressDrawable="@drawable/bg_custom_seekbar"
+                android:thumb="@drawable/pikachu"
+                android:thumbOffset="18dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/thirdPikachuAmountBet"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="64dp"
+                android:layout_weight="1"
+                android:autofillHints=""
+                android:hint="@string/amount_of_money"
+                android:inputType="numberDecimal"
+                android:text=""
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
     </LinearLayout>
 
     <Button
         android:id="@+id/startRaceBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start race"
         android:layout_marginTop="30dp"
         android:backgroundTint="#F6EB05"
+        android:text="Bắt đầu"
         android:textColor="@color/black"
         android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -204,4 +151,4 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

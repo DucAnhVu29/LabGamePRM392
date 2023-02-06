@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Lab Game PRM392</string>
-    <string name="amount_of_money">Amount of money</string>
+    <string name="amount_of_money">Nhập số tiền muốn cược</string>
 </resources>

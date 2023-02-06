@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -21,19 +22,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+
+enum State {
+    START,
+    RESET,
+}
+
 public class MainActivity extends AppCompatActivity {
 
     //    TextView
     TextView balanceText;
-    TextView firstPikachuText;
-    TextView secondPikachuText;
-    TextView thirdPikachuText;
-
-
-    //    CheckBox
-    CheckBox firstPikachuCheckBox;
-    CheckBox secondPikachuCheckBox;
-    CheckBox thirdPikachuCheckBox;
 
     //    EditText
     EditText firstPikachuAmountBet;
@@ -46,18 +44,17 @@ public class MainActivity extends AppCompatActivity {
     //    Button
     Button startRaceBtn;
 
+    private State state = State.START;
 
     private int tickTime = 10;
     private static final int maxCount = 10000;
     private static final int minCount = 0;
-    private static final int step = 10;
-    private static final String REQUIRE = "Require";
-    private static final String BALANCE_TEXT = "You balance: ";
+    private static final String BALANCE_TEXT = "Số tiền còn lại: ";
     private final double balance = (int) (50 + (Math.random() * 150 + 1));
     private ArrayList<String> rank = new ArrayList<>();
-
-
     private int initialSpeed = 10;
+
+    private int nextRank = 1;
 
     SeekBarRunner[] pikachus = {null, null, null};
 
@@ -69,15 +66,6 @@ public class MainActivity extends AppCompatActivity {
 
 //        TextView
         balanceText = findViewById(R.id.balanceText);
-        firstPikachuText = findViewById(R.id.firstPikachuText);
-        secondPikachuText = findViewById(R.id.secondPikachuText);
-        thirdPikachuText = findViewById(R.id.thirdPikachuText);
-
-
-//        CheckBox
-        firstPikachuCheckBox = findViewById(R.id.firstPikachuCheckBox);
-        secondPikachuCheckBox = findViewById(R.id.secondPikachuCheckBox);
-        thirdPikachuCheckBox = findViewById(R.id.thirdPikachuCheckBox);
 
 
 //        EditText
@@ -109,9 +97,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Pikachus
         pikachus = new SeekBarRunner[]{
-                new SeekBarRunner(firstPikachuText.getText().toString()),
-                new SeekBarRunner(secondPikachuText.getText().toString()),
-                new SeekBarRunner(thirdPikachuText.getText().toString()),
+                new SeekBarRunner("1", initialSpeed),
+                new SeekBarRunner("2", initialSpeed),
+                new SeekBarRunner("3", initialSpeed),
         };
 
 
@@ -119,85 +107,53 @@ public class MainActivity extends AppCompatActivity {
         balanceText.setText(BALANCE_TEXT + balance + "$");
 
 
-//        Set all EditText to disable
-        firstPikachuAmountBet.setEnabled(false);
-        firstPikachuAmountBet.setFocusable(false);
-        secondPikachuAmountBet.setEnabled(false);
-        secondPikachuAmountBet.setFocusable(false);
-        thirdPikachuAmountBet.setEnabled(false);
-        thirdPikachuAmountBet.setFocusable(false);
-
-
-//        Check Box on checked
-
-//        First
-        firstPikachuCheckBox.setOnClickListener(
-                v -> {
-                    if (firstPikachuCheckBox.isChecked()) {
-                        firstPikachuAmountBet.setFocusable(true);
-                        firstPikachuAmountBet.setFocusableInTouchMode(true);
-                        firstPikachuAmountBet.setEnabled(true);
-                    } else {
-                        firstPikachuAmountBet.setError(null);
-                        firstPikachuAmountBet.setText("");
-                        firstPikachuAmountBet.setEnabled(false);
-                        firstPikachuAmountBet.setFocusable(false);
-                    }
-                }
-        );
-
-//        Second
-        secondPikachuCheckBox.setOnClickListener(
-                v -> {
-                    if (secondPikachuCheckBox.isChecked()) {
-                        secondPikachuAmountBet.setFocusable(true);
-                        secondPikachuAmountBet.setFocusableInTouchMode(true);
-                        secondPikachuAmountBet.setEnabled(true);
-                    } else {
-                        secondPikachuAmountBet.setError(null);
-                        secondPikachuAmountBet.setText("");
-                        secondPikachuAmountBet.setEnabled(false);
-                        secondPikachuAmountBet.setFocusable(false);
-                    }
-                }
-        );
-
-//        Third
-        thirdPikachuCheckBox.setOnClickListener(
-                v -> {
-                    if (thirdPikachuCheckBox.isChecked()) {
-                        thirdPikachuAmountBet.setFocusable(true);
-                        thirdPikachuAmountBet.setFocusableInTouchMode(true);
-                        thirdPikachuAmountBet.setEnabled(true);
-                    } else {
-                        thirdPikachuAmountBet.setError(null);
-                        thirdPikachuAmountBet.setText("");
-                        thirdPikachuAmountBet.setEnabled(false);
-                        thirdPikachuAmountBet.setFocusable(false);
-                    }
-                }
-        );
-
-
 //        Start Race
         startRaceBtn.setOnClickListener(
                 v -> {
-                    if (!checkInput() || !checkBalance()) {
-                        return;
-                    }
+                    if (state == State.START) {
+                        if (!checkInput()) {
+                            Toast.makeText(this, "Cược tối đa 2 Pikachu thoyyy",
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
 
-                    Thread.currentThread().interrupt();
-                    resetRace();
+                        if (!checkBalance()) {
+                            Toast.makeText(this, "Hong đủ tiền má oyy",
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
 
-                    Runnable[] runnables = {null, null, null};
+                        Thread.currentThread().interrupt();
+                        resetRace();
 
-                    for (int i = 0; i < runnables.length; ++i) {
-                        runnables[i] = createRunnable(i);
-                    }
+                        Runnable[] runnables = {null, null, null};
 
-                    for (Runnable runnable : runnables) {
-                        Thread t = new Thread(runnable);
-                        t.start();
+                        for (int i = 0; i < runnables.length; ++i) {
+                            runnables[i] = createRunnable(i);
+                        }
+
+                        for (Runnable runnable : runnables) {
+                            Thread t = new Thread(runnable);
+                            t.start();
+                        }
+
+                        firstPikachuAmountBet.setVisibility(View.INVISIBLE);
+                        secondPikachuAmountBet.setVisibility(View.INVISIBLE);
+                        thirdPikachuAmountBet.setVisibility(View.INVISIBLE);
+
+                        startRaceBtn.setText("Chơi lại");
+                        startRaceBtn.setEnabled(false);
+                        startRaceBtn.setBackgroundColor(0xFF808080);
+                        state = State.RESET;
+                    } else if (state == State.RESET) {
+                        resetRace();
+
+                        firstPikachuAmountBet.setVisibility(View.VISIBLE);
+                        secondPikachuAmountBet.setVisibility(View.VISIBLE);
+                        thirdPikachuAmountBet.setVisibility(View.VISIBLE);
+                        startRaceBtn.setText("Bắt đầu");
+
+                        state = State.START;
                     }
                 }
         );
@@ -206,6 +162,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void resetRace() {
         rank.clear();
+
+        nextRank = 1;
 
         for (SeekBarRunner pikachu : pikachus) {
             pikachu.speed = initialSpeed;
@@ -236,35 +194,49 @@ public class MainActivity extends AppCompatActivity {
 
                     } else {
                         rank.add(pikachus[i].getName());
+                        pikachus[i].setRank(nextRank);
+                        nextRank++;
                         pikachus[i].setRunning(false);
 
+                        if (nextRank > 3) {
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    startRaceBtn.setEnabled(true);
+                                    startRaceBtn.setBackgroundColor(0xFFF6EB05);
+                                }
+                            });
+                        }
+
+                        Thread.currentThread().interrupt();
                     }
                 }
+
+
             }
         };
 
         return runnable;
     }
 
+    private void updateButtonState() {
+
+    }
+
     //    Check Input field
     private boolean checkInput() {
-        if (firstPikachuCheckBox.isChecked() && TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
-            firstPikachuAmountBet.setError(REQUIRE);
-            return false;
+        int cnt = 0;
+
+        if (!TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
+            cnt++;
+        }
+        if (!TextUtils.isEmpty(secondPikachuAmountBet.getText().toString())) {
+            cnt++;
+        }
+        if (!TextUtils.isEmpty(thirdPikachuAmountBet.getText().toString())) {
+            cnt++;
         }
 
-        if (secondPikachuCheckBox.isChecked() && TextUtils.isEmpty(secondPikachuAmountBet.getText().toString())) {
-            secondPikachuAmountBet.setError(REQUIRE);
-            return false;
-        }
-
-        if (thirdPikachuCheckBox.isChecked() && TextUtils.isEmpty(thirdPikachuAmountBet.getText().toString())) {
-            thirdPikachuAmountBet.setError(REQUIRE);
-            return false;
-        }
-
-
-        return true;
+        return cnt <= 2;
     }
 
     //    Check amount that bet
