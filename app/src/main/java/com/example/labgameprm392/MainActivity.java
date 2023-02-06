@@ -3,12 +3,14 @@ package com.example.labgameprm392;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.Constraints;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -21,6 +23,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import pl.droidsonroids.gif.GifDrawable;
+import pl.droidsonroids.gif.GifImageView;
 
 
 enum State {
@@ -47,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private State state = State.START;
 
     private int tickTime = 10;
-    private static final int maxCount = 10000;
+    private static final int maxCount = 20000;
     private static final int minCount = 0;
     private double balance = (int) (50 + (Math.random() * 150 + 1));
     private ArrayList<String> rank = new ArrayList<>();
@@ -57,13 +62,28 @@ public class MainActivity extends AppCompatActivity {
 
     double[] betAmounts = {0, 0, 0};
 
+    TextView[] rankTVs = {null, null, null};
+
     SeekBarRunner[] pikachus = {null, null, null};
+
+    GifImageView[] pikachuGifs = {null, null, null};
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        getSupportActionBar().hide();
+
+        pikachuGifs[0] = findViewById(R.id.pikachu_gif_0);
+        pikachuGifs[1] = findViewById(R.id.pikachu_gif_1);
+        pikachuGifs[2] = findViewById(R.id.pikachu_gif_2);
+
+        rankTVs[0] = findViewById(R.id.rank_0);
+        rankTVs[1] = findViewById(R.id.rank_1);
+        rankTVs[2] = findViewById(R.id.rank_2);
+
 
 //        TextView
         balanceText = findViewById(R.id.balanceText);
@@ -95,6 +115,13 @@ public class MainActivity extends AppCompatActivity {
         seekBars[0].setMax(maxCount);
         seekBars[1].setMax(maxCount);
         seekBars[2].setMax(maxCount);
+
+        for (int i = 0; i < seekBars.length; ++i) {
+            seekBars[i].setOnSeekBarChangeListener(
+                    onSeekBarChangeListener(i)
+            );
+        }
+
 
         // Pikachus
         pikachus = new SeekBarRunner[]{
@@ -144,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
                         startRaceBtn.setText("Chơi lại");
                         startRaceBtn.setEnabled(false);
-                        startRaceBtn.setBackgroundColor(0xFF808080);
+                        startRaceBtn.setBackgroundColor(0xFFe0e0e0);
                         state = State.RESET;
                     } else if (state == State.RESET) {
                         resetRace();
@@ -160,12 +187,40 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
+    private SeekBar.OnSeekBarChangeListener onSeekBarChangeListener(int i) {
+        return new SeekBar.OnSeekBarChangeListener() {
+
+            public void onStopTrackingTouch(SeekBar bar) {
+                int value = bar.getProgress(); // the value of the seekBar progress
+            }
+
+            public void onStartTrackingTouch(SeekBar bar) {
+
+            }
+
+            public void onProgressChanged(SeekBar bar,
+                                          int paramInt, boolean paramBoolean) {
+                ViewGroup.MarginLayoutParams params =
+                        (ViewGroup.MarginLayoutParams) pikachuGifs[i].getLayoutParams();
+                params.setMarginStart((int) ((double) paramInt / maxCount * (seekBars[i].getWidth() - pikachuGifs[i].getWidth())));
+                pikachuGifs[i].requestLayout();
+            }
+        };
+    }
 
     private void resetRace() {
         rank.clear();
 
         nextRank = 1;
         betAmounts = new double[]{0, 0, 0};
+
+        for (TextView rankTV: rankTVs) {
+            rankTV.setText("");
+        }
+
+        for (GifImageView pikachuGif : pikachuGifs) {
+            ((GifDrawable) pikachuGif.getDrawable()).start();
+        }
 
         for (SeekBarRunner pikachu : pikachus) {
             pikachu.speed = initialSpeed;
@@ -199,21 +254,26 @@ public class MainActivity extends AppCompatActivity {
                         pikachus[i].setRank(nextRank);
                         nextRank++;
                         pikachus[i].setRunning(false);
+                        ((GifDrawable) pikachuGifs[i].getDrawable()).stop();
 
                         if (pikachus[i].getRank() == 1) {
                             balance += betAmounts[i] * 2;
                         }
 
-                        if (nextRank > 3) {
-                            runOnUiThread(new Runnable() {
-                                public void run() {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                rankTVs[i].setText(Integer.toString(pikachus[i].getRank()));
+
+                                if (nextRank > 3) {
                                     startRaceBtn.setEnabled(true);
                                     startRaceBtn.setBackgroundColor(0xFFF6EB05);
 
                                     balanceText.setText(Double.toString(balance));
                                 }
-                            });
-                        }
+                            }
+                        });
+
+
 
                         Thread.currentThread().interrupt();
 
