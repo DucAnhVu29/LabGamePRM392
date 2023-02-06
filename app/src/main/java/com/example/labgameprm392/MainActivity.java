@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -48,16 +49,21 @@ public class MainActivity extends AppCompatActivity {
     Button startRaceBtn;
 
 
-    private static final int maxCount = 100;
+    private int tickTime = 10;
+    private static final int maxCount = 10000;
     private static final int minCount = 0;
     private static final int step = 10;
     private static final String REQUIRE = "Require";
-    private static final String BALANCETEXT = "You balance: ";
+    private static final String BALANCE_TEXT = "You balance: ";
     private final double balance = (int) (50 + (Math.random() * 150 + 1));
     private int firstRunnerStep = 0;
     private int secondRunnerStep = 0;
     private int thirdRunnerStep = 0;
     private ArrayList<String> rank = new ArrayList<>();
+
+
+    private int initialSpeed = 10;
+    private int[] speeds = {initialSpeed, initialSpeed, initialSpeed};
 
 
     @SuppressLint("SetTextI18n")
@@ -108,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        Random your balance
-        balanceText.setText(BALANCETEXT + balance + "$");
+        balanceText.setText(BALANCE_TEXT + balance + "$");
 
 
 //        Set all EditText to disable
@@ -203,16 +209,17 @@ public class MainActivity extends AppCompatActivity {
 
                     Runnable firstRunner = () -> {
                         while (firstPikachu.isRunning()) {
-                            int randomNum = (int) (0 + (Math.random() * step + 1));
+                            speeds[0] = randomSpeed(speeds[0]);
+
                             if (firstRunnerStep < maxCount) {
 
-                                firstRunnerStep += randomNum;
+                                firstRunnerStep += speeds[0];
 
                                 firstPikachu.setProgress(firstRunnerStep);
 
                                 firstPikachuSeekBar.setProgress(firstRunnerStep);
                                 try {
-                                    Thread.sleep(1000);
+                                    Thread.sleep(tickTime);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
@@ -227,16 +234,18 @@ public class MainActivity extends AppCompatActivity {
 
                     Runnable secondRunner = () -> {
                         while (secondPikachu.isRunning()) {
-                            int randomNum = (int) (0 + (Math.random() * step + 1));
+                            Log.i("1", "1");
+                            speeds[1] = randomSpeed(speeds[1]);
+
                             if (secondRunnerStep < maxCount) {
 
-                                secondRunnerStep += randomNum;
+                                secondRunnerStep += speeds[1];
 
                                 secondPikachu.setProgress(secondRunnerStep);
 
                                 secondPikachuSeekBar.setProgress(secondRunnerStep);
                                 try {
-                                    Thread.sleep(1000);
+                                    Thread.sleep(tickTime);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
@@ -250,16 +259,17 @@ public class MainActivity extends AppCompatActivity {
 
                     Runnable thirdRunner = () -> {
                         while (thirdPikachu.isRunning()) {
-                            int randomNum = (int) (0 + (Math.random() * step + 1));
+                            speeds[2] = randomSpeed(speeds[2]);
+
                             if (thirdRunnerStep < maxCount) {
 
-                                thirdRunnerStep += randomNum;
+                                thirdRunnerStep += speeds[2];
 
                                 thirdPikachu.setProgress(thirdRunnerStep);
 
                                 thirdPikachuSeekBar.setProgress(thirdRunnerStep);
                                 try {
-                                    Thread.sleep(1000);
+                                    Thread.sleep(tickTime);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
@@ -353,6 +363,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    private int randomSpeed(int previousSpeed) {
+        int  randomNumber = (int)(Math.random() * 10 + - 5);
+
+        if (previousSpeed + randomNumber < 0) {
+            return 0;
+        }
+
+        return previousSpeed + randomNumber;
     }
 
 //    Bet Check
