@@ -6,6 +6,9 @@ public class SeekBarRunner {
     private String name;
     private boolean isRunning;
 
+    private int rank;
+    public int speed;
+
     public SeekBarRunner(String name) {
         this.progress = 0;
         this.name = name;

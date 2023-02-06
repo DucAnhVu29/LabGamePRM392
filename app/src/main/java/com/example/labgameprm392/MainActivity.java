@@ -41,9 +41,7 @@ public class MainActivity extends AppCompatActivity {
     EditText thirdPikachuAmountBet;
 
     //    SeekBar
-    SeekBar firstPikachuSeekBar;
-    SeekBar secondPikachuSeekBar;
-    SeekBar thirdPikachuSeekBar;
+    SeekBar[] seekBars = {null, null, null};
 
     //    Button
     Button startRaceBtn;
@@ -56,13 +54,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String REQUIRE = "Require";
     private static final String BALANCE_TEXT = "You balance: ";
     private final double balance = (int) (50 + (Math.random() * 150 + 1));
-    private int[] runnerSteps = {0, 0, 0};
     private ArrayList<String> rank = new ArrayList<>();
 
 
     private int initialSpeed = 10;
-    private int[] speeds = {initialSpeed, initialSpeed, initialSpeed};
 
+    SeekBarRunner[] pikachus = {null, null, null};
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -90,9 +87,9 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        SeekBar
-        firstPikachuSeekBar = findViewById(R.id.firstPikachuSeekBar);
-        secondPikachuSeekBar = findViewById(R.id.secondPikachuSeekBar);
-        thirdPikachuSeekBar = findViewById(R.id.thirdPikachuSeekBar);
+        seekBars[0] = findViewById(R.id.firstPikachuSeekBar);
+        seekBars[1] = findViewById(R.id.secondPikachuSeekBar);
+        seekBars[2] = findViewById(R.id.thirdPikachuSeekBar);
 
 
 //        Button
@@ -100,15 +97,22 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        Set Enable SeekBar
-        firstPikachuSeekBar.setEnabled(false);
-        secondPikachuSeekBar.setEnabled(false);
-        thirdPikachuSeekBar.setEnabled(false);
+        seekBars[0].setEnabled(false);
+        seekBars[1].setEnabled(false);
+        seekBars[2].setEnabled(false);
 
 
 //        Set SeekBar max
-        firstPikachuSeekBar.setMax(maxCount);
-        secondPikachuSeekBar.setMax(maxCount);
-        thirdPikachuSeekBar.setMax(maxCount);
+        seekBars[0].setMax(maxCount);
+        seekBars[1].setMax(maxCount);
+        seekBars[2].setMax(maxCount);
+
+        // Pikachus
+        pikachus = new SeekBarRunner[]{
+                new SeekBarRunner(firstPikachuText.getText().toString()),
+                new SeekBarRunner(secondPikachuText.getText().toString()),
+                new SeekBarRunner(thirdPikachuText.getText().toString()),
+        };
 
 
 //        Random your balance
@@ -178,137 +182,23 @@ public class MainActivity extends AppCompatActivity {
 //        Start Race
         startRaceBtn.setOnClickListener(
                 v -> {
-
                     if (!checkInput() || !checkBalance()) {
                         return;
                     }
 
                     Thread.currentThread().interrupt();
-
-//                    Set all disable
-//                    startRaceBtn.setEnabled(false);
-//                    firstPikachuCheckBox.setEnabled(false);
-//                    secondPikachuCheckBox.setEnabled(false);
-//                    thirdPikachuCheckBox.setEnabled(false);
-
-
-
                     resetRace();
 
-                    runnerSteps[0] = 0;
-                    runnerSteps[1] = 0;
-                    runnerSteps[2] = 0;
+                    Runnable[] runnables = {null, null, null};
 
-                    SeekBarRunner firstPikachu = new SeekBarRunner(firstPikachuText.getText().toString());
-                    SeekBarRunner secondPikachu = new SeekBarRunner(secondPikachuText.getText().toString());
-                    SeekBarRunner thirdPikachu = new SeekBarRunner(thirdPikachuText.getText().toString());
-
-                    firstPikachuSeekBar.setProgress(minCount);
-                    secondPikachuSeekBar.setProgress(minCount);
-                    thirdPikachuSeekBar.setProgress(minCount);
-
-                    Runnable firstRunner = () -> {
-                        while (firstPikachu.isRunning()) {
-                            speeds[0] = randomSpeed(speeds[0]);
-
-                            if (runnerSteps[0] < maxCount) {
-
-                                runnerSteps[0] += speeds[0];
-
-                                firstPikachu.setProgress(runnerSteps[0]);
-
-                                firstPikachuSeekBar.setProgress(runnerSteps[0]);
-                                try {
-                                    Thread.sleep(tickTime);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-
-                            } else {
-                                rank.add(firstPikachu.getName());
-                                firstPikachu.setRunning(false);
-
-                            }
-                        }
-                    };
-
-                    Runnable secondRunner = () -> {
-                        while (secondPikachu.isRunning()) {
-                            speeds[1] = randomSpeed(speeds[1]);
-
-                            if (runnerSteps[1] < maxCount) {
-
-                                runnerSteps[1] += speeds[1];
-
-                                secondPikachu.setProgress(runnerSteps[1]);
-
-                                secondPikachuSeekBar.setProgress(runnerSteps[1]);
-                                try {
-                                    Thread.sleep(tickTime);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-
-                            } else {
-                                rank.add(secondPikachu.getName());
-                                secondPikachu.setRunning(false);
-                            }
-                        }
-                    };
-
-                    Runnable thirdRunner = () -> {
-                        while (thirdPikachu.isRunning()) {
-                            speeds[2] = randomSpeed(speeds[2]);
-
-                            if (runnerSteps[2] < maxCount) {
-
-                                runnerSteps[2] += speeds[2];
-
-                                thirdPikachu.setProgress(runnerSteps[2]);
-
-                                thirdPikachuSeekBar.setProgress(runnerSteps[2]);
-                                try {
-                                    Thread.sleep(tickTime);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-
-                            } else {
-                                rank.add(thirdPikachu.getName());
-                                thirdPikachu.setRunning(false);
-                            }
-                        }
-                    };
-
-
-//                    new Thread(firstRunner).start();
-//                    new Thread(secondRunner).start();
-//                    new Thread(thirdRunner).start();
-
-                    // Start runners' thread
-                    Thread[] runnerThreads = {
-                            new Thread(firstRunner),
-                            new Thread(secondRunner),
-                            new Thread(thirdRunner),
-                    };
-
-                    for (Thread runnerThread: runnerThreads) {
-                        runnerThread.start();
+                    for (int i = 0; i < runnables.length; ++i) {
+                        runnables[i] = createRunnable(i);
                     }
 
-
-
-//                    startRaceBtn.setEnabled(true);
-//                    startRaceBtn.setFocusable(true);
-//                    firstPikachuCheckBox.setEnabled(true);
-//                    firstPikachuCheckBox.setFocusable(true);
-//                    secondPikachuCheckBox.setEnabled(true);
-//                    secondPikachuCheckBox.setFocusable(true);
-//                    thirdPikachuCheckBox.setEnabled(true);
-//                    thirdPikachuCheckBox.setFocusable(true);
-//
-//                    Toast.makeText(this, rank.get(0) + " won the Race!!!"
-//                            , Toast.LENGTH_LONG).show();
+                    for (Runnable runnable : runnables) {
+                        Thread t = new Thread(runnable);
+                        t.start();
+                    }
                 }
         );
     }
@@ -316,9 +206,46 @@ public class MainActivity extends AppCompatActivity {
 
     private void resetRace() {
         rank.clear();
-        runnerSteps = new int[] {0, 0, 0};
-        speeds = new int[] {initialSpeed, initialSpeed, initialSpeed};
+
+        for (SeekBarRunner pikachu : pikachus) {
+            pikachu.speed = initialSpeed;
+            pikachu.setProgress(0);
+            pikachu.setRunning(true);
+        }
+
+        for (SeekBar seekBar : seekBars) {
+            seekBar.setProgress(minCount);
+        }
     }
+
+    private Runnable createRunnable(int i) {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                while (pikachus[i].isRunning()) {
+                    pikachus[i].speed = randomSpeed(pikachus[i].speed);
+
+                    if (pikachus[i].getProgress() < maxCount) {
+                        pikachus[i].setProgress(pikachus[i].getProgress() + pikachus[i].speed);
+
+                        seekBars[i].setProgress(pikachus[i].getProgress());
+                        try {
+                            Thread.sleep(tickTime);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                    } else {
+                        rank.add(pikachus[i].getName());
+                        pikachus[i].setRunning(false);
+
+                    }
+                }
+            }
+        };
+
+        return runnable;
+    }
+
     //    Check Input field
     private boolean checkInput() {
         if (firstPikachuCheckBox.isChecked() && TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
@@ -371,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int randomSpeed(int previousSpeed) {
-        int  randomNumber = (int)(Math.random() * 10 + - 5);
+        int randomNumber = (int) (Math.random() * 10 + -5);
 
         if (previousSpeed + randomNumber < 0) {
             return 0;
