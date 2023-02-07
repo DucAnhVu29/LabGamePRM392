@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        Set SeekBar max
-        seekBars[0].setMax(maxCount);
+        seekBars[0].setMax(100);
         seekBars[1].setMax(maxCount);
         seekBars[2].setMax(maxCount);
 
