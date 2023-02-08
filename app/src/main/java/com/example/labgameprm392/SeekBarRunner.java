@@ -6,7 +6,19 @@ public class SeekBarRunner {
     private String name;
     private boolean isRunning;
     private int rank;
-    public int speed;
+    private final int initialSpeed;
+    private int speed;
+
+
+    //    Constructor
+    public SeekBarRunner(String name, int initialSpeed) {
+        this.progress = 0;
+        this.name = name;
+        this.isRunning = true;
+        this.rank = -1;
+        this.speed = initialSpeed;
+        this.initialSpeed = speed;
+    }
 
     public int getRank() {
         return rank;
@@ -21,22 +33,6 @@ public class SeekBarRunner {
     }
 
     public void setSpeed(int speed) {
-        this.speed = speed;
-    }
-
-    public SeekBarRunner(String name, int speed) {
-        this.progress = 0;
-        this.name = name;
-        this.isRunning = true;
-        this.rank = -1;
-        this.speed = speed;
-    }
-
-    public void reset() {
-        this.progress = 0;
-        this.name = name;
-        this.isRunning = true;
-        this.rank = -1;
         this.speed = speed;
     }
 
@@ -62,5 +58,12 @@ public class SeekBarRunner {
 
     public void setRunning(boolean running) {
         isRunning = running;
+    }
+
+    public void reset() {
+        this.progress = 0;
+        this.isRunning = true;
+        this.rank = -1;
+        this.speed = this.initialSpeed;
     }
 }

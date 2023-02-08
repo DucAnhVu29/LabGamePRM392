@@ -1,28 +1,24 @@
 package com.example.labgameprm392;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.Constraints;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
@@ -44,29 +40,38 @@ public class MainActivity extends AppCompatActivity {
     EditText thirdPikachuAmountBet;
 
     //    SeekBar
-    SeekBar[] seekBars = {null, null, null};
+    ArrayList<SeekBar> seekBarList = new ArrayList<>();
 
     //    Button
     Button startRaceBtn;
 
+    //    State
     private State state = State.START;
 
-    private int tickTime = 10;
-    private static final int maxCount = 20000;
-    private static final int minCount = 0;
+    //    Bet List
+    Double[] betAmountList = {0.0, 0.0, 0.0};
+
+    //    Rank Text View list
+    TextView[] rankTextViewList = {null, null, null};
+
+    //    Pikachu List
+    SeekBarRunner[] pikachuList = {null, null, null};
+
+    //    Gif Image List
+    GifImageView[] pikachuGifList = {null, null, null};
+
+    private static final int TICK_TIME = 30;
+    private static final int MAX_COUNT = 20000;
+    private static final int MIN_COUNT = 0;
     private double balance = (int) (50 + (Math.random() * 150 + 1));
-    private ArrayList<String> rank = new ArrayList<>();
-    private int initialSpeed = 10;
+    private final ArrayList<String> rank = new ArrayList<>();
+    private static final int INITIAL_SPEED = 10;
 
     private int nextRank = 1;
 
-    double[] betAmounts = {0, 0, 0};
+    private static final Logger logger = null;
 
-    TextView[] rankTVs = {null, null, null};
-
-    SeekBarRunner[] pikachus = {null, null, null};
-
-    GifImageView[] pikachuGifs = {null, null, null};
+    DecimalFormat decimalFormat = new DecimalFormat("###.###");
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -74,15 +79,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getSupportActionBar().hide();
+        Objects.requireNonNull(getSupportActionBar()).hide();
 
-        pikachuGifs[0] = findViewById(R.id.pikachu_gif_0);
-        pikachuGifs[1] = findViewById(R.id.pikachu_gif_1);
-        pikachuGifs[2] = findViewById(R.id.pikachu_gif_2);
+        pikachuGifList[0] = findViewById(R.id.pikachu_gif_0);
+        pikachuGifList[1] = findViewById(R.id.pikachu_gif_1);
+        pikachuGifList[2] = findViewById(R.id.pikachu_gif_2);
 
-        rankTVs[0] = findViewById(R.id.rank_0);
-        rankTVs[1] = findViewById(R.id.rank_1);
-        rankTVs[2] = findViewById(R.id.rank_2);
+        rankTextViewList[0] = findViewById(R.id.rank_0);
+        rankTextViewList[1] = findViewById(R.id.rank_1);
+        rankTextViewList[2] = findViewById(R.id.rank_2);
 
 
 //        TextView
@@ -96,38 +101,30 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        SeekBar
-        seekBars[0] = findViewById(R.id.firstPikachuSeekBar);
-        seekBars[1] = findViewById(R.id.secondPikachuSeekBar);
-        seekBars[2] = findViewById(R.id.thirdPikachuSeekBar);
+        seekBarList.add(findViewById(R.id.firstPikachuSeekBar));
+        seekBarList.add(findViewById(R.id.secondPikachuSeekBar));
+        seekBarList.add(findViewById(R.id.thirdPikachuSeekBar));
 
 
 //        Button
         startRaceBtn = findViewById(R.id.startRaceBtn);
 
 
-//        Set Enable SeekBar
-        seekBars[0].setEnabled(false);
-        seekBars[1].setEnabled(false);
-        seekBars[2].setEnabled(false);
-
-
-//        Set SeekBar max
-        seekBars[0].setMax(maxCount);
-        seekBars[1].setMax(maxCount);
-        seekBars[2].setMax(maxCount);
-
-        for (int i = 0; i < seekBars.length; ++i) {
-            seekBars[i].setOnSeekBarChangeListener(
-                    onSeekBarChangeListener(i)
+//        Set SeekBar disable and max
+        for (SeekBar seekbar : seekBarList) {
+            seekbar.setEnabled(false);
+            seekbar.setMax(MAX_COUNT);
+            seekbar.setOnSeekBarChangeListener(
+                    onSeekBarChangeListener(seekBarList.indexOf(seekbar))
             );
         }
 
 
-        // Pikachus
-        pikachus = new SeekBarRunner[]{
-                new SeekBarRunner("1", initialSpeed),
-                new SeekBarRunner("2", initialSpeed),
-                new SeekBarRunner("3", initialSpeed),
+        // Pikachu List
+        pikachuList = new SeekBarRunner[]{
+                new SeekBarRunner("1", INITIAL_SPEED),
+                new SeekBarRunner("2", INITIAL_SPEED),
+                new SeekBarRunner("3", INITIAL_SPEED),
         };
 
 
@@ -142,15 +139,7 @@ public class MainActivity extends AppCompatActivity {
                         resetRace();
                         Thread.currentThread().interrupt();
 
-                        if (!checkInput()) {
-                            Toast.makeText(this, "Cược tối đa 2 Pikachu thoyyy",
-                                    Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
-                        if (!checkBalance()) {
-                            Toast.makeText(this, "Hong đủ tiền má oyy",
-                                    Toast.LENGTH_LONG).show();
+                        if (!checkInput() || !checkBalance()) {
                             return;
                         }
 
@@ -190,20 +179,23 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar.OnSeekBarChangeListener onSeekBarChangeListener(int i) {
         return new SeekBar.OnSeekBarChangeListener() {
 
+            @Override
             public void onStopTrackingTouch(SeekBar bar) {
-                int value = bar.getProgress(); // the value of the seekBar progress
+                // TODO document why this method is empty
             }
 
+            @Override
             public void onStartTrackingTouch(SeekBar bar) {
-
+                // TODO document why this method is empty
             }
 
             public void onProgressChanged(SeekBar bar,
                                           int paramInt, boolean paramBoolean) {
                 ViewGroup.MarginLayoutParams params =
-                        (ViewGroup.MarginLayoutParams) pikachuGifs[i].getLayoutParams();
-                params.setMarginStart((int) ((double) paramInt / maxCount * (seekBars[i].getWidth() - pikachuGifs[i].getWidth())));
-                pikachuGifs[i].requestLayout();
+                        (ViewGroup.MarginLayoutParams) pikachuGifList[i].getLayoutParams();
+                params.setMarginStart((int) ((double) paramInt / MAX_COUNT *
+                        (seekBarList.get(i).getWidth() - pikachuGifList[i].getWidth())));
+                pikachuGifList[i].requestLayout();
             }
         };
     }
@@ -212,118 +204,92 @@ public class MainActivity extends AppCompatActivity {
         rank.clear();
 
         nextRank = 1;
-        betAmounts = new double[]{0, 0, 0};
 
-        for (TextView rankTV: rankTVs) {
-            rankTV.setText("");
+        for (TextView rankTextView : rankTextViewList) {
+            rankTextView.setText("");
         }
 
-        for (GifImageView pikachuGif : pikachuGifs) {
+        for (GifImageView pikachuGif : pikachuGifList) {
             ((GifDrawable) pikachuGif.getDrawable()).start();
         }
 
-        for (SeekBarRunner pikachu : pikachus) {
-            pikachu.speed = initialSpeed;
+        for (SeekBarRunner pikachu : pikachuList) {
+            pikachu.setSpeed(INITIAL_SPEED);
             pikachu.setProgress(0);
             pikachu.setRunning(true);
         }
 
-        for (SeekBar seekBar : seekBars) {
-            seekBar.setProgress(minCount);
+        for (SeekBar seekBar : seekBarList) {
+            seekBar.setProgress(MIN_COUNT);
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private Runnable createRunnable(int i) {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                while (pikachus[i].isRunning()) {
-                    pikachus[i].speed = randomSpeed(pikachus[i].speed);
+        return () -> {
+            while (pikachuList[i].isRunning()) {
+                pikachuList[i].setSpeed(randomSpeed(pikachuList[i].getSpeed()));
 
-                    if (pikachus[i].getProgress() < maxCount) {
-                        pikachus[i].setProgress(pikachus[i].getProgress() + pikachus[i].speed);
+                if (pikachuList[i].getProgress() < MAX_COUNT) {
+                    pikachuList[i].setProgress(pikachuList[i].getProgress() + pikachuList[i].getSpeed());
 
-                        seekBars[i].setProgress(pikachus[i].getProgress());
-                        try {
-                            Thread.sleep(tickTime);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                    } else {
-                        rank.add(pikachus[i].getName());
-                        pikachus[i].setRank(nextRank);
-                        nextRank++;
-                        pikachus[i].setRunning(false);
-                        ((GifDrawable) pikachuGifs[i].getDrawable()).stop();
-
-                        if (pikachus[i].getRank() == 1) {
-                            balance += betAmounts[i] * 2;
-                        }
-
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                rankTVs[i].setText(Integer.toString(pikachus[i].getRank()));
-
-                                if (nextRank > 3) {
-                                    startRaceBtn.setEnabled(true);
-                                    startRaceBtn.setBackgroundColor(0xFFF6EB05);
-
-                                    balanceText.setText(Double.toString(balance));
-                                }
-                            }
-                        });
-
-
-
-                        Thread.currentThread().interrupt();
-
+                    seekBarList.get(i).setProgress(pikachuList[i].getProgress());
+                    try {
+                        Thread.sleep(TICK_TIME);
+                    } catch (InterruptedException e) {
+                        assert false;
+                        logger.log(Level.WARNING, "Interrupted!", e);
                     }
+
+                } else {
+                    rank.add(pikachuList[i].getName());
+                    pikachuList[i].setRank(nextRank);
+                    nextRank++;
+                    pikachuList[i].setRunning(false);
+                    ((GifDrawable) pikachuGifList[i].getDrawable()).stop();
+
+                    if (pikachuList[i].getRank() == 1) {
+                        balance += betAmountList[i] * 2;
+                        balance = Double.parseDouble(decimalFormat.format(balance));
+                    }
+
+                    runOnUiThread(() -> {
+                        rankTextViewList[i].setText(Integer.toString(pikachuList[i].getRank()));
+
+                        if (nextRank > 3) {
+                            startRaceBtn.setEnabled(true);
+                            startRaceBtn.setBackgroundColor(0xFFF6EB05);
+
+                            balanceText.setText(Double.toString(balance));
+                        }
+                    });
+
+
+                    Thread.currentThread().interrupt();
+
                 }
-
-
             }
         };
-
-        return runnable;
     }
 
     //    Check Input field
     private boolean checkInput() {
-        int cnt = 0;
+        int count = 0;
 
-        try {
-            if (!TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
+        if (!TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
+            count++;
+        }
 
-                betAmounts[0] =
-                        Double.parseDouble(firstPikachuAmountBet.getText().toString());
-                cnt++;
-            }
+        if (!TextUtils.isEmpty(secondPikachuAmountBet.getText().toString())) {
+            count++;
+        }
 
-            if (!TextUtils.isEmpty(secondPikachuAmountBet.getText().toString())) {
-                betAmounts[1] =
-                        Double.parseDouble(secondPikachuAmountBet.getText().toString());
-                cnt++;
-            }
+        if (!TextUtils.isEmpty(thirdPikachuAmountBet.getText().toString())) {
+            count++;
+        }
 
-            if (!TextUtils.isEmpty(thirdPikachuAmountBet.getText().toString())) {
-                betAmounts[2] =
-                        Double.parseDouble(thirdPikachuAmountBet.getText().toString());
-                cnt++;
-            }
-
-            if (cnt >= 3) return false;
-
-            for (double betAmount : betAmounts) {
-                balance -= betAmount;
-            }
-
-            firstPikachuAmountBet.setText("");
-            secondPikachuAmountBet.setText("");
-            thirdPikachuAmountBet.setText("");
-
-            balanceText.setText(Double.toString(balance));
-        } catch (Exception e) {
-            Toast.makeText(this, "Số tiền cược không hợp lệ",
+        if (count >= 3) {
+            Toast.makeText(this, "Cược tối đa 2 Pikachu thoyyy",
                     Toast.LENGTH_LONG).show();
             return false;
         }
@@ -332,6 +298,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //    Check amount that bet
+    @SuppressLint("SetTextI18n")
     private boolean checkBalance() {
 
         double firstPikachuBet = 0;
@@ -340,38 +307,44 @@ public class MainActivity extends AppCompatActivity {
 
         if (!TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
             firstPikachuBet = Double.parseDouble(firstPikachuAmountBet.getText().toString());
+            betAmountList[0] = firstPikachuBet;
         }
 
         if (!TextUtils.isEmpty(secondPikachuAmountBet.getText().toString())) {
             secondPikachuBet = Double.parseDouble(secondPikachuAmountBet.getText().toString());
+            betAmountList[1] = secondPikachuBet;
         }
 
         if (!TextUtils.isEmpty(thirdPikachuAmountBet.getText().toString())) {
             thirdPikachuBet = Double.parseDouble(thirdPikachuAmountBet.getText().toString());
+            betAmountList[2] = thirdPikachuBet;
         }
 
         double amountBet = firstPikachuBet + secondPikachuBet + thirdPikachuBet;
 
         if (balance - amountBet < 0) {
-            Toast.makeText(this, "You can not bet more than what you have!"
-                    , Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Hong đủ tiền má oyy",
+                    Toast.LENGTH_LONG).show();
             return false;
         }
+
+        balance -= amountBet;
+
+        balance = Double.parseDouble(decimalFormat.format(balance));
+
+        firstPikachuAmountBet.setText("");
+        secondPikachuAmountBet.setText("");
+        thirdPikachuAmountBet.setText("");
+
+        balanceText.setText(Double.toString(balance));
 
         return true;
     }
 
     private int randomSpeed(int previousSpeed) {
-        int randomNumber = (int) (Math.random() * 10 + -5);
+        int randomNumber = (int) (Math.random() * 5 - 2);
 
-        if (previousSpeed + randomNumber < 0) {
-            return 0;
-        }
+        return Math.max(previousSpeed + randomNumber, 0);
 
-        return previousSpeed + randomNumber;
     }
-
-//    Bet Check
-
-
 }

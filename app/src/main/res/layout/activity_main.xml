@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="FPT88"
+            android:text="FPT88.com"
             android:textColor="#000"
             android:textSize="36sp"
             android:textStyle="bold" />
@@ -114,6 +114,7 @@
                 android:inputType="numberDecimal"
                 android:textColor="@color/white"
                 android:textColorHint="#f0f0f0"
+                android:maxLength="12"
                 android:textSize="20sp" />
 
         </RelativeLayout>
@@ -158,6 +159,7 @@
                 android:inputType="numberDecimal"
                 android:textColor="@color/white"
                 android:textColorHint="#f0f0f0"
+                android:maxLength="12"
                 android:textSize="20sp" />
 
         </RelativeLayout>
@@ -203,6 +205,7 @@
                 android:inputType="numberDecimal"
                 android:textColor="@color/white"
                 android:textColorHint="#f0f0f0"
+                android:maxLength="12"
                 android:textSize="20sp" />
 
         </RelativeLayout>
