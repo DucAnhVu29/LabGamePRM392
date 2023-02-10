@@ -203,6 +203,10 @@ public class MainActivity extends AppCompatActivity {
     private void resetRace() {
         rank.clear();
 
+        betAmountList[0] = 0.0;
+        betAmountList[1] = 0.0;
+        betAmountList[2] = 0.0;
+
         nextRank = 1;
 
         for (TextView rankTextView : rankTextViewList) {
