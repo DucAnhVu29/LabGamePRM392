@@ -91,20 +91,20 @@
                 android:gravity="center_vertical"/>
 
             <SeekBar
-                android:id="@+id/firstPikachuSeekBar"
+                android:id="@+id/hitokageSeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginTop="24dp"
                 android:thumbOffset="18dp" />
 
             <pl.droidsonroids.gif.GifImageView
-                android:id="@+id/pikachu_gif_0"
-                android:layout_width="wrap_content"
+                android:id="@+id/hitokageGif"
+                android:layout_width="55dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/pikachu" />
+                android:src="@drawable/chariz2" />
 
             <EditText
-                android:id="@+id/firstPikachuAmountBet"
+                android:id="@+id/hitokageAmountBet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="72dp"
@@ -136,20 +136,20 @@
                 android:textColor="@color/black"/>
 
             <SeekBar
-                android:id="@+id/secondPikachuSeekBar"
+                android:id="@+id/zenigameSeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginTop="24dp"
                 android:thumbOffset="18dp" />
 
             <pl.droidsonroids.gif.GifImageView
-                android:id="@+id/pikachu_gif_1"
-                android:layout_width="wrap_content"
+                android:id="@+id/zenigameGif"
+                android:layout_width="55dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/pikachu" />
+                android:src="@drawable/squirtle" />
 
             <EditText
-                android:id="@+id/secondPikachuAmountBet"
+                android:id="@+id/zenigameAmountBet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="72dp"
@@ -182,20 +182,20 @@
                 android:gravity="center_vertical"/>
 
             <SeekBar
-                android:id="@+id/thirdPikachuSeekBar"
+                android:id="@+id/fushigidaneSeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginTop="24dp"
                 android:thumbOffset="18dp" />
 
             <pl.droidsonroids.gif.GifImageView
-                android:id="@+id/pikachu_gif_2"
-                android:layout_width="wrap_content"
+                android:id="@+id/fushigidaneGif"
+                android:layout_width="55dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/pikachu" />
+                android:src="@drawable/bulb" />
 
             <EditText
-                android:id="@+id/thirdPikachuAmountBet"
+                android:id="@+id/fushigidaneAmountBet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="72dp"
