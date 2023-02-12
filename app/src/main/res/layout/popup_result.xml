@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@drawable/bg_white_dialog"
+    android:layout_margin="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:text="Kết quả"
+        style="@style/TextAppearance.AppCompat.Title"/>
+
+    <pl.droidsonroids.gif.GifImageView
+        android:layout_gravity="center"
+        android:id="@+id/winnerGif"
+        android:layout_width="150dp"
+        android:layout_height="150dp"  />
+
+
+    <TextView
+        android:id="@+id/winnerName"
+        android:padding="15dp"
+        android:text=""
+        style="@style/TextAppearance.AppCompat.SearchResult.Subtitle"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+
+    <Button
+        android:id="@+id/closePopup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đóng"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:backgroundTint="#E4E6EB"
+        android:layout_gravity="center"/>
+
+
+</LinearLayout>
