@@ -9,15 +9,18 @@ public class SeekBarRunner {
     private final int initialSpeed;
     private int speed;
 
+    private int image;
+
 
     //    Constructor
-    public SeekBarRunner(String name, int initialSpeed) {
+    public SeekBarRunner(String name, int initialSpeed, int image) {
         this.progress = 0;
         this.name = name;
         this.isRunning = true;
         this.rank = -1;
         this.speed = initialSpeed;
         this.initialSpeed = speed;
+        this.image = image;
     }
 
     public int getRank() {
@@ -58,6 +61,14 @@ public class SeekBarRunner {
 
     public void setRunning(boolean running) {
         isRunning = running;
+    }
+
+    public int getImage() {
+        return image;
+    }
+
+    public void setImage(int image) {
+        this.image = image;
     }
 
     public void reset() {
