@@ -4,10 +4,17 @@ package com.example.labgameprm392;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
@@ -35,9 +42,9 @@ public class MainActivity extends AppCompatActivity {
     TextView balanceText;
 
     //    EditText
-    EditText firstPikachuAmountBet;
-    EditText secondPikachuAmountBet;
-    EditText thirdPikachuAmountBet;
+    EditText hitokageAmountBet;
+    EditText zenigameAmountBet;
+    EditText fushigidaneAmountBet;
 
     //    SeekBar
     ArrayList<SeekBar> seekBarList = new ArrayList<>();
@@ -54,13 +61,18 @@ public class MainActivity extends AppCompatActivity {
     //    Rank Text View list
     TextView[] rankTextViewList = {null, null, null};
 
-    //    Pikachu List
-    SeekBarRunner[] pikachuList = {null, null, null};
+    //    Pokemon List
+    SeekBarRunner[] pokemonList = {null, null, null};
 
     //    Gif Image List
-    GifImageView[] pikachuGifList = {null, null, null};
+    GifImageView[] pokemonGifList = {null, null, null};
 
-    private static final int TICK_TIME = 30;
+//    Audio
+    MediaPlayer pokemonThemeSong;
+    MediaPlayer runningThemeSong;
+    MediaPlayer winningThemeSong;
+
+    private static final int TICK_TIME = 50;
     private static final int MAX_COUNT = 20000;
     private static final int MIN_COUNT = 0;
     private double balance = (int) (50 + (Math.random() * 150 + 1));
@@ -71,7 +83,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final Logger logger = null;
 
-    DecimalFormat decimalFormat = new DecimalFormat("###.###");
+    private final DecimalFormat decimalFormat = new DecimalFormat("###.###");
+
+    private SeekBarRunner seekBarWinner = null;
+
+    boolean checkThread = false;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -81,9 +97,9 @@ public class MainActivity extends AppCompatActivity {
 
         Objects.requireNonNull(getSupportActionBar()).hide();
 
-        pikachuGifList[0] = findViewById(R.id.pikachu_gif_0);
-        pikachuGifList[1] = findViewById(R.id.pikachu_gif_1);
-        pikachuGifList[2] = findViewById(R.id.pikachu_gif_2);
+        pokemonGifList[0] = findViewById(R.id.hitokageGif);
+        pokemonGifList[1] = findViewById(R.id.zenigameGif);
+        pokemonGifList[2] = findViewById(R.id.fushigidaneGif);
 
         rankTextViewList[0] = findViewById(R.id.rank_0);
         rankTextViewList[1] = findViewById(R.id.rank_1);
@@ -95,15 +111,15 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        EditText
-        firstPikachuAmountBet = findViewById(R.id.firstPikachuAmountBet);
-        secondPikachuAmountBet = findViewById(R.id.secondPikachuAmountBet);
-        thirdPikachuAmountBet = findViewById(R.id.thirdPikachuAmountBet);
+        hitokageAmountBet = findViewById(R.id.hitokageAmountBet);
+        zenigameAmountBet = findViewById(R.id.zenigameAmountBet);
+        fushigidaneAmountBet = findViewById(R.id.fushigidaneAmountBet);
 
 
 //        SeekBar
-        seekBarList.add(findViewById(R.id.firstPikachuSeekBar));
-        seekBarList.add(findViewById(R.id.secondPikachuSeekBar));
-        seekBarList.add(findViewById(R.id.thirdPikachuSeekBar));
+        seekBarList.add(findViewById(R.id.hitokageSeekBar));
+        seekBarList.add(findViewById(R.id.zenigameSeekBar));
+        seekBarList.add(findViewById(R.id.fushigidaneSeekBar));
 
 
 //        Button
@@ -120,11 +136,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        // Pikachu List
-        pikachuList = new SeekBarRunner[]{
-                new SeekBarRunner("1", INITIAL_SPEED),
-                new SeekBarRunner("2", INITIAL_SPEED),
-                new SeekBarRunner("3", INITIAL_SPEED),
+        // Pokemon List
+        pokemonList = new SeekBarRunner[]{
+                new SeekBarRunner("Hitokage", INITIAL_SPEED, R.drawable.chamander),
+                new SeekBarRunner("Zenigame", INITIAL_SPEED, R.drawable.squirtle_smile),
+                new SeekBarRunner("Fushigidane", INITIAL_SPEED, R.drawable.bulbasaur_pokemon),
         };
 
 
@@ -132,42 +148,59 @@ public class MainActivity extends AppCompatActivity {
         balanceText.setText(balance + "");
 
 
+//      Audio
+        pokemonThemeSong = MediaPlayer.create(this, R.raw.pokemon_theme_song);
+        runningThemeSong = MediaPlayer.create(this, R.raw.background_theme);
+        winningThemeSong = MediaPlayer.create(this, R.raw.vitory_theme);
+
+
+//        Game default audio
+        pokemonThemeSong.setLooping(true);
+        pokemonThemeSong.start();
+
+
 //        Start Race
         startRaceBtn.setOnClickListener(
                 v -> {
                     if (state == State.START) {
                         resetRace();
+
+                        pokemonThemeSong.pause();
+                        pokemonThemeSong.seekTo(0);
+                        runningThemeSong.start();
+
                         Thread.currentThread().interrupt();
 
                         if (!checkInput() || !checkBalance()) {
                             return;
                         }
 
-                        Runnable[] runnables = {null, null, null};
+                        Runnable[] runnableList = {null, null, null};
 
-                        for (int i = 0; i < runnables.length; ++i) {
-                            runnables[i] = createRunnable(i);
+                        for (int i = 0; i < runnableList.length; ++i) {
+                            runnableList[i] = createRunnable(i);
                         }
 
-                        for (Runnable runnable : runnables) {
+                        for (Runnable runnable : runnableList) {
                             Thread t = new Thread(runnable);
                             t.start();
                         }
 
-                        firstPikachuAmountBet.setVisibility(View.INVISIBLE);
-                        secondPikachuAmountBet.setVisibility(View.INVISIBLE);
-                        thirdPikachuAmountBet.setVisibility(View.INVISIBLE);
+                        hitokageAmountBet.setVisibility(View.INVISIBLE);
+                        zenigameAmountBet.setVisibility(View.INVISIBLE);
+                        fushigidaneAmountBet.setVisibility(View.INVISIBLE);
 
                         startRaceBtn.setText("Chơi lại");
                         startRaceBtn.setEnabled(false);
                         startRaceBtn.setBackgroundColor(0xFFe0e0e0);
                         state = State.RESET;
                     } else if (state == State.RESET) {
+
                         resetRace();
 
-                        firstPikachuAmountBet.setVisibility(View.VISIBLE);
-                        secondPikachuAmountBet.setVisibility(View.VISIBLE);
-                        thirdPikachuAmountBet.setVisibility(View.VISIBLE);
+                        hitokageAmountBet.setVisibility(View.VISIBLE);
+                        zenigameAmountBet.setVisibility(View.VISIBLE);
+                        fushigidaneAmountBet.setVisibility(View.VISIBLE);
                         startRaceBtn.setText("Bắt đầu");
 
                         state = State.START;
@@ -192,10 +225,10 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar bar,
                                           int paramInt, boolean paramBoolean) {
                 ViewGroup.MarginLayoutParams params =
-                        (ViewGroup.MarginLayoutParams) pikachuGifList[i].getLayoutParams();
+                        (ViewGroup.MarginLayoutParams) pokemonGifList[i].getLayoutParams();
                 params.setMarginStart((int) ((double) paramInt / MAX_COUNT *
-                        (seekBarList.get(i).getWidth() - pikachuGifList[i].getWidth())));
-                pikachuGifList[i].requestLayout();
+                        (seekBarList.get(i).getWidth() - pokemonGifList[i].getWidth())));
+                pokemonGifList[i].requestLayout();
             }
         };
     }
@@ -213,14 +246,14 @@ public class MainActivity extends AppCompatActivity {
             rankTextView.setText("");
         }
 
-        for (GifImageView pikachuGif : pikachuGifList) {
-            ((GifDrawable) pikachuGif.getDrawable()).start();
+        for (GifImageView pokemonGif : pokemonGifList) {
+            ((GifDrawable) pokemonGif.getDrawable()).start();
         }
 
-        for (SeekBarRunner pikachu : pikachuList) {
-            pikachu.setSpeed(INITIAL_SPEED);
-            pikachu.setProgress(0);
-            pikachu.setRunning(true);
+        for (SeekBarRunner pokemon : pokemonList) {
+            pokemon.setSpeed(INITIAL_SPEED);
+            pokemon.setProgress(0);
+            pokemon.setRunning(true);
         }
 
         for (SeekBar seekBar : seekBarList) {
@@ -231,13 +264,15 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private Runnable createRunnable(int i) {
         return () -> {
-            while (pikachuList[i].isRunning()) {
-                pikachuList[i].setSpeed(randomSpeed(pikachuList[i].getSpeed()));
+            checkThread = false;
 
-                if (pikachuList[i].getProgress() < MAX_COUNT) {
-                    pikachuList[i].setProgress(pikachuList[i].getProgress() + pikachuList[i].getSpeed());
+            while (pokemonList[i].isRunning()) {
+                pokemonList[i].setSpeed(randomSpeed(pokemonList[i].getSpeed()));
 
-                    seekBarList.get(i).setProgress(pikachuList[i].getProgress());
+                if (pokemonList[i].getProgress() < MAX_COUNT) {
+                    pokemonList[i].setProgress(pokemonList[i].getProgress() + pokemonList[i].getSpeed());
+
+                    seekBarList.get(i).setProgress(pokemonList[i].getProgress());
                     try {
                         Thread.sleep(TICK_TIME);
                     } catch (InterruptedException e) {
@@ -246,28 +281,30 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 } else {
-                    rank.add(pikachuList[i].getName());
-                    pikachuList[i].setRank(nextRank);
+                    rank.add(pokemonList[i].getName());
+                    pokemonList[i].setRank(nextRank);
                     nextRank++;
-                    pikachuList[i].setRunning(false);
-                    ((GifDrawable) pikachuGifList[i].getDrawable()).stop();
+                    pokemonList[i].setRunning(false);
+                    ((GifDrawable) pokemonGifList[i].getDrawable()).stop();
 
-                    if (pikachuList[i].getRank() == 1) {
+                    if (pokemonList[i].getRank() == 1) {
+                        seekBarWinner = pokemonList[i];
                         balance += betAmountList[i] * 2;
                         balance = Double.parseDouble(decimalFormat.format(balance));
                     }
 
                     runOnUiThread(() -> {
-                        rankTextViewList[i].setText(Integer.toString(pikachuList[i].getRank()));
+                        rankTextViewList[i].setText(Integer.toString(pokemonList[i].getRank()));
 
                         if (nextRank > 3) {
                             startRaceBtn.setEnabled(true);
                             startRaceBtn.setBackgroundColor(0xFFF6EB05);
+                            checkThread = true;
+                            checkThreadOpenPopup();
 
                             balanceText.setText(Double.toString(balance));
                         }
                     });
-
 
                     Thread.currentThread().interrupt();
 
@@ -276,24 +313,71 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
+    private void checkThreadOpenPopup(){
+        if (checkThread) openPopupResult(Gravity.CENTER, seekBarWinner);
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void openPopupResult(int gravity, SeekBarRunner seekBarRunner){
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.popup_result);
+        Window window = dialog.getWindow();
+        if(window == null){
+            return;
+        }
+
+        runningThemeSong.pause();
+        runningThemeSong.seekTo(0);
+        winningThemeSong.start();
+
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = gravity;
+        window.setAttributes(windowAttributes);
+
+        dialog.setCancelable(Gravity.BOTTOM == gravity);
+
+        String win = " won!";
+
+        TextView winnerName = dialog.findViewById(R.id.winnerName);
+        winnerName.setText(seekBarRunner.getName() + win);
+
+        GifImageView winnerGif = dialog.findViewById(R.id.winnerGif);
+        winnerGif.setBackgroundResource(seekBarRunner.getImage());
+
+        Button closePopup = dialog.findViewById(R.id.closePopup);
+
+        closePopup.setOnClickListener(v -> {
+            pokemonThemeSong.start();
+            winningThemeSong.pause();
+            winningThemeSong.seekTo(0);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
     //    Check Input field
     private boolean checkInput() {
         int count = 0;
 
-        if (!TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
+        if (!TextUtils.isEmpty(hitokageAmountBet.getText().toString())) {
             count++;
         }
 
-        if (!TextUtils.isEmpty(secondPikachuAmountBet.getText().toString())) {
+        if (!TextUtils.isEmpty(zenigameAmountBet.getText().toString())) {
             count++;
         }
 
-        if (!TextUtils.isEmpty(thirdPikachuAmountBet.getText().toString())) {
+        if (!TextUtils.isEmpty(fushigidaneAmountBet.getText().toString())) {
             count++;
         }
 
         if (count >= 3) {
-            Toast.makeText(this, "Cược tối đa 2 Pikachu thoyyy",
+            Toast.makeText(this, "Cược tối đa 2 Pokemon thoyyy",
                     Toast.LENGTH_LONG).show();
             return false;
         }
@@ -305,26 +389,26 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private boolean checkBalance() {
 
-        double firstPikachuBet = 0;
-        double secondPikachuBet = 0;
-        double thirdPikachuBet = 0;
+        double hitokageBet = 0;
+        double zenigameBet = 0;
+        double fushigidaneBet = 0;
 
-        if (!TextUtils.isEmpty(firstPikachuAmountBet.getText().toString())) {
-            firstPikachuBet = Double.parseDouble(firstPikachuAmountBet.getText().toString());
-            betAmountList[0] = firstPikachuBet;
+        if (!TextUtils.isEmpty(hitokageAmountBet.getText().toString())) {
+            hitokageBet = Double.parseDouble(hitokageAmountBet.getText().toString());
+            betAmountList[0] = hitokageBet;
         }
 
-        if (!TextUtils.isEmpty(secondPikachuAmountBet.getText().toString())) {
-            secondPikachuBet = Double.parseDouble(secondPikachuAmountBet.getText().toString());
-            betAmountList[1] = secondPikachuBet;
+        if (!TextUtils.isEmpty(zenigameAmountBet.getText().toString())) {
+            zenigameBet = Double.parseDouble(zenigameAmountBet.getText().toString());
+            betAmountList[1] = zenigameBet;
         }
 
-        if (!TextUtils.isEmpty(thirdPikachuAmountBet.getText().toString())) {
-            thirdPikachuBet = Double.parseDouble(thirdPikachuAmountBet.getText().toString());
-            betAmountList[2] = thirdPikachuBet;
+        if (!TextUtils.isEmpty(fushigidaneAmountBet.getText().toString())) {
+            fushigidaneBet = Double.parseDouble(fushigidaneAmountBet.getText().toString());
+            betAmountList[2] = fushigidaneBet;
         }
 
-        double amountBet = firstPikachuBet + secondPikachuBet + thirdPikachuBet;
+        double amountBet = hitokageBet + zenigameBet + fushigidaneBet;
 
         if (balance - amountBet < 0) {
             Toast.makeText(this, "Hong đủ tiền má oyy",
@@ -336,9 +420,9 @@ public class MainActivity extends AppCompatActivity {
 
         balance = Double.parseDouble(decimalFormat.format(balance));
 
-        firstPikachuAmountBet.setText("");
-        secondPikachuAmountBet.setText("");
-        thirdPikachuAmountBet.setText("");
+        hitokageAmountBet.setText("");
+        zenigameAmountBet.setText("");
+        fushigidaneAmountBet.setText("");
 
         balanceText.setText(Double.toString(balance));
 
